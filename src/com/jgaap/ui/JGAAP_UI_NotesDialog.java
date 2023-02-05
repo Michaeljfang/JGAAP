@@ -88,10 +88,10 @@ public class JGAAP_UI_NotesDialog extends javax.swing.JDialog {
                         .addContainerGap()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 732, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(606, 606, 606)
-                        .addComponent(OK_Button, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE)
+                        .addGap(606, 606, Short.MAX_VALUE)
+                        .addComponent(OK_Button, javax.swing.GroupLayout.DEFAULT_SIZE, 65, 200)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Cancel_Button)))
+                        .addComponent(Cancel_Button, javax.swing.GroupLayout.DEFAULT_SIZE, 65, 200)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

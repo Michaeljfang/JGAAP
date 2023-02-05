@@ -35,6 +35,7 @@ package com.jgaap.ui;
 
 //Package Imports
 import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -47,6 +48,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
@@ -108,6 +110,8 @@ public class JGAAP_UI_MainForm extends javax.swing.JFrame {
 
 	DefaultComboBoxModel LanguageComboBox_Model = new DefaultComboBoxModel();
 	DefaultComboBoxModel CanonicizerComboBoxModel = new DefaultComboBoxModel();
+
+	DefaultComboBoxModel UnifiedSearchField_Model = new DefaultComboBoxModel();
 
 	DefaultTreeModel KnownAuthorsTree_Model = new DefaultTreeModel(
 			new DefaultMutableTreeNode("Authors"));
@@ -190,6 +194,9 @@ public class JGAAP_UI_MainForm extends javax.swing.JFrame {
 		DocumentsPanel_NotesButton = new javax.swing.JButton();
 		jLabel10 = new javax.swing.JLabel();
 		DocumentsPanel_LanguageComboBox = new javax.swing.JComboBox();
+
+		UnifiedSearchField = new javax.swing.JComboBox();
+
 		JGAAP_CanonicizerPanel = new javax.swing.JPanel();
 		CanonicizersPanel_RemoveCanonicizerButton = new javax.swing.JButton();
 		CanonicizersPanel_NotesButton = new javax.swing.JButton();
@@ -307,6 +314,29 @@ public class JGAAP_UI_MainForm extends javax.swing.JFrame {
 		helpMenu = new javax.swing.JMenu();
 		aboutMenuItem = new javax.swing.JMenuItem();
 
+
+		UnifiedSearchField.setEditable(true);
+		UnifiedSearchField.setModel(new DefaultComboBoxModel<String>());
+		javax.swing.JTextField UnifiedSearchField_text = (JTextField) UnifiedSearchField.getEditor().getEditorComponent();
+		// UnifiedSearchField_text.addKeyListener(new java.awt.event.KeyListener() {
+		// 	public void keyPressed(KeyEvent newKeyEvent) {
+		// 		UnifiedSearchField_text.getDocument();
+		// 		unifiedSearch(newKeyEvent);
+		// 	}
+		// 	public void keyReleased(KeyEvent arg0) {}
+		// 	public void keyTyped(KeyEvent arg0) {
+				
+		// 	}
+		// });
+
+		UnifiedSearchField_text.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				UnifiedSearchField_text.getDocument();
+				unifiedSearch();
+			}
+		});
+
+
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		setTitle("JGAAP "+JGAAPConstants.VERSION);
 
@@ -403,6 +433,13 @@ public class JGAAP_UI_MainForm extends javax.swing.JFrame {
 						.createParallelGroup(
 								javax.swing.GroupLayout.Alignment.LEADING)
 						.addGroup(
+							JGAAP_DocumentsPanelLayout
+								.createSequentialGroup()
+								.addContainerGap()
+								.addComponent(UnifiedSearchField)
+								.addContainerGap()
+						)
+						.addGroup(
 								javax.swing.GroupLayout.Alignment.TRAILING,
 								JGAAP_DocumentsPanelLayout
 										.createSequentialGroup()
@@ -489,6 +526,8 @@ public class JGAAP_UI_MainForm extends javax.swing.JFrame {
 						.addGroup(
 								JGAAP_DocumentsPanelLayout
 										.createSequentialGroup()
+										.addContainerGap()
+										.addComponent(UnifiedSearchField, 0, 0, 20)
 										.addContainerGap()
 										.addGroup(
 												JGAAP_DocumentsPanelLayout
@@ -3671,6 +3710,67 @@ public class JGAAP_UI_MainForm extends javax.swing.JFrame {
 
 	}
 
+	private ArrayList<String> expand_search(String searchTerms) {
+		ArrayList<String> allSearchTerms = new ArrayList<String>();
+			allSearchTerms.add(searchTerms);
+			for (String searchTermKey : JGAAPConstants.JGAAP_SEARCH_TABLE.keySet()){
+				if (searchTermKey.contains(searchTerms)){
+					for (String altTerm : JGAAPConstants.JGAAP_SEARCH_TABLE.get(searchTermKey))
+						allSearchTerms.add(altTerm);
+				}
+			}
+		return allSearchTerms;
+	}
+
+	private boolean match_text(String moduleName, String searchTerms, ArrayList<String> allSearchTerms) {
+		
+		String searchMatch = moduleName.toLowerCase().replace('-', ' ');
+		boolean match = false;
+
+		if (searchTerms.charAt(0) == '"' &&
+				searchTerms.charAt(searchTerms.length()-1) == '"' &&
+				searchTerms.length() > 2) {
+			match = searchMatch.contains(searchTerms.substring(1, searchTerms.length()-1).toString());
+
+		} else {
+			if (allSearchTerms.get(0).charAt(0) == '"')
+				// ignore if first char is double quote. This is so the intermediate results
+				// are more "stable" when the user is trying to perform an exact search
+				// but haven't typed the double quote at the end yet.
+				allSearchTerms.set(0, allSearchTerms.get(0).substring(1));
+			for (String searchTerm : allSearchTerms){
+				match = match || (searchMatch.contains(searchTerm));
+			}
+			String initials = "";
+			for (String word : searchMatch.split(" +")) initials += word.charAt(0);
+
+			match = match || ((initials.contains(searchTerms)) && searchTerms.length() > 1);
+		}
+		return match;
+	}
+
+	private void unifiedSearch() {
+		String searchTerm;
+		try {
+			searchTerm = UnifiedSearchField.getEditor().getItem().toString();
+			System.out.println(searchTerm);
+		} catch (Exception BadLocationExceptionJava) {
+			return;
+		}
+	}
+	private void unifiedSearch(KeyEvent newKeyEvent) {
+		if (!Character.isDefined(newKeyEvent.getKeyChar())) return;
+		String searchTerm;
+		char newKey = newKeyEvent.getKeyChar();
+		try {
+			searchTerm = UnifiedSearchField.getEditor().getItem().toString();
+			System.out.println(searchTerm+newKey);
+		} catch (Exception BadLocationExceptionJava) {
+			return;
+		}
+	}
+
+
 	private void searchModuleList(String moduleType) {
 		// selectively display what's in the module listboxes depending on what's in the search field.
 		// widgets ctrl-F: SearchField
@@ -3754,43 +3854,16 @@ public class JGAAP_UI_MainForm extends javax.swing.JFrame {
 		} else {
 			boolean matchedAny = false;
 			// make list of all alternative search terms to match module names to.
-			ArrayList<String> allSearchTerms = new ArrayList<String>();
-			allSearchTerms.add(searchTerms);
-			for (String searchTermKey : JGAAPConstants.JGAAP_SEARCH_TABLE.keySet()){
-				if (searchTermKey.contains(searchTerms)){
-					for (String altTerm : JGAAPConstants.JGAAP_SEARCH_TABLE.get(searchTermKey))
-						allSearchTerms.add(altTerm);
-				}
-			}
+			ArrayList<String> allSearchTerms = expand_search(searchTerms);
 			// now match the names, including the text in the search bar.
 			for (int i = 0; i < masterList.size(); i++) {
 				// for every module, check the following:
 				// 1. if their own names (lowercase, hypen -> space) match search terms
 				// 2. if their own names match alternative search terms
 				// 3. if their initials match search terms.
-				Boolean match = false;
+				// (code see match_text method)
 				String moduleName = ((Displayable) masterList.get(i)).displayName();
-				String searchMatch = moduleName.toLowerCase().replace('-', ' ');
-
-				if (searchTerms.charAt(0) == '"' &&
-						searchTerms.charAt(searchTerms.length()-1) == '"' &&
-						searchTerms.length() > 2) {
-					match = searchMatch.contains(searchTerms.substring(1, searchTerms.length()-1).toString());
-
-				} else {
-					if (allSearchTerms.get(0).charAt(0) == '"')
-						// ignore if first char is double quote. This is so the intermediate results
-						// are more "stable" when the user is trying to perform an exact search
-						// but haven't typed the double quote at the end yet.
-						allSearchTerms.set(0, allSearchTerms.get(0).substring(1));
-					for (String searchTerm : allSearchTerms){
-						match = match || (searchMatch.contains(searchTerm));
-					}
-					String initials = "";
-					for (String word : searchMatch.split(" +")) initials += word.charAt(0);
-
-					match = match || ((initials.contains(searchTerms)) && searchTerms.length() > 1);
-				}
+				Boolean match = match_text(moduleName, searchTerms, allSearchTerms);
 
 				if (match) {
 					listboxModel.addElement(moduleName);
@@ -4036,6 +4109,8 @@ public class JGAAP_UI_MainForm extends javax.swing.JFrame {
 	private javax.swing.JScrollPane jScrollPane27;
 	private javax.swing.JScrollPane jScrollPane6;
 	private javax.swing.JScrollPane jScrollPane9;
+
+	private javax.swing.JComboBox UnifiedSearchField;
 	// End of variables declaration//GEN-END:variables
 
 	// reused UI element sizes

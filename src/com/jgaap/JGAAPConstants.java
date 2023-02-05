@@ -106,6 +106,7 @@ public class JGAAPConstants {
 	static {
 		// if the search term contains the key, add its hash value to the search terms too.
 		// a key's values are added if the key **contains** the text in the search box.
+		// in values: replace hyphen with space.
 		// module is matched if its name contains any of the search terms.
 		JGAAP_SEARCH_TABLE.put("neural networks", new String[] {"perceptron", "nn"});
 		JGAAP_SEARCH_TABLE.put("neuro networks", new String[] {"perceptron", "nn"});
@@ -126,5 +127,6 @@ public class JGAAPConstants {
 		JGAAP_SEARCH_TABLE.put("juola wyner", new String[] {"jw", "thin cross entropy"});
 		JGAAP_SEARCH_TABLE.put("iqr", new String[] {"interquartile range"});
 		JGAAP_SEARCH_TABLE.put("burrow's delta", new String[] {"burrows delta"});
+		JGAAP_SEARCH_TABLE.put("extreme culler", new String[] {"x treme culler"});
 	}
 }
